@@ -1,20 +1,29 @@
 import express from 'express';
-import path from 'path';
+
 import cors from 'cors';
 import mysql from 'mysql2/promise';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Obtenir le répertoire courant du fichier
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const app = express();
+
+// Exemple d'utilisation de __dirname
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Charge les variables d'environnement
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('dist')); // Dossier de build du frontend
+// app.use(express.static('dist')); // Dossier de build du frontend
 
 // Configuration de la base de données
 const dbConfig = {
