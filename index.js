@@ -39,15 +39,30 @@ const pool = mysql.createPool(dbConfig);
 function createTableLog(){
   try{
     const sql = `
-    CREATE TABLE IF NOT EXISTS userlog (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(50) NOT NULL,
-        timestamp DATETIME NOT NULL,
-        success BOOLEAN NOT NULL
-
+      CREATE TABLE IF NOT EXISTS userlog (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          username VARCHAR(50) NOT NULL,
+          timestamp DATETIME NOT NULL,
+          success BOOLEAN NOT NULL
       );
     `
-    pool.query(sql)
+    const sql2 = `
+      CREATE TABLE IF NOT EXISTS users (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          username VARCHAR(50) UNIQUE NOT NULL,
+          password VARCHAR(255) NOT NULL,
+          role ENUM('admin', 'user') NOT NULL DEFAULT 'user'
+      );
+    `
+    const sql3 = `
+      INSERT IGNORE INTO users (username, password, role) VALUES
+        ('admin', 'admin', 'admin');
+    `
+
+    pool.execute(sql);
+    pool.execute(sql2);
+    pool.execute(sql3);
+
   } catch(error) {
     console.error(error)
   }
