@@ -5,6 +5,13 @@ CREATE TABLE users (
     role ENUM('admin', 'user') NOT NULL DEFAULT 'user'
 );
 
+CREATE TABLE userlog (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    timestamp DATETIME NOT NULL,
+    success BOOLEAN NOT NULL
+);
+
 CREATE TABLE members (
     id INT AUTO_INCREMENT PRIMARY KEY,
     firstName VARCHAR(100) NOT NULL,

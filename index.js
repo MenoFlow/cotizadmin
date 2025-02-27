@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { query } from 'express';
 
 import cors from 'cors';
 import mysql from 'mysql2/promise';
@@ -35,6 +35,25 @@ const dbConfig = {
 };
 
 const pool = mysql.createPool(dbConfig);
+
+function createTableLog(){
+  try{
+    const sql = `
+    CREATE TABLE IF NOT EXISTS userlog (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50) NOT NULL,
+        timestamp DATETIME NOT NULL,
+        success BOOLEAN NOT NULL
+
+      );
+    `
+    pool.query(sql)
+  } catch(error) {
+    console.error(error)
+  }
+}
+
+createTableLog();
 
 // Middleware d'authentification
 const authenticateToken = (req, res, next) => {
@@ -434,9 +453,9 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
 
 // Routes des utilisateurs (admin seulement)
 app.get('/api/users', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin') return res.sendStatus(403);
+  // if (req.user.role !== 'admin') return res.sendStatus(403);
   try {
-    const [rows] = await pool.query('SELECT id, username, role FROM users');
+    const [rows] = await pool.query('SELECT  username, password, role FROM users');
     res.json(rows);
   } catch (error) {
     console.error(error);
@@ -445,7 +464,6 @@ app.get('/api/users', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/users', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin') return res.sendStatus(403);
   const { username, password, role } = req.body;
   try {
     const [result] = await pool.query(
@@ -459,11 +477,10 @@ app.post('/api/users', authenticateToken, async (req, res) => {
   }
 });
 
-app.delete('/api/users/:id', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin') return res.sendStatus(403);
-  const { id } = req.params;
+app.delete('/api/users/:username', authenticateToken, async (req, res) => {
+  const { username } = req.params;
   try {
-    await pool.query('DELETE FROM users WHERE id = ?', [id]);
+    await pool.query('DELETE FROM users WHERE username = ?', [username]);
     res.status(204).end();
   } catch (error) {
     console.error(error);
@@ -483,6 +500,38 @@ app.put('/api/users/:id/role', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur' });
   }
 });
+
+// Recuperer la liste des logs
+app.get('/api/loginlogs', authenticateToken, async(req, res) => {
+  const sql = `
+    SELECT * FROM userlog
+  `
+  try{
+    const [rows] = await pool.query(sql);
+    res.json(rows);
+  }
+  catch(error){
+    console.error(error);
+    res.status(500).json({message: "Erreur lors de la recuperation du journal de Log : "+error})
+  }
+})
+
+// Inserer un log d'un user
+app.post('/api/loginlogs', authenticateToken, async(req, res) => {
+  const { username, timestamp, success } = req.body;
+
+  const sql = `
+    INSERT INTO userlog (username, timestamp, success) VALUES (?, ?, ?)
+  `
+  try{
+    await pool.query(sql, [username, timestamp, success]);
+    res.json({message: "login log inserer avec succès"})
+  }
+  catch(error){
+    console.error(error);
+    res.status(500).json({message: "Erreur lors de l'ajout du login Log"})
+  }
+})
 
 // Route pour servir l'application React
 app.get('*', (req, res) => {
