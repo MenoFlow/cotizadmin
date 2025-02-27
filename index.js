@@ -58,11 +58,9 @@ function createTableLog(){
       INSERT IGNORE INTO users (username, password, role) VALUES
         ('admin', 'admin', 'admin');
     `
-
     pool.execute(sql);
     pool.execute(sql2);
     pool.execute(sql3);
-
   } catch(error) {
     console.error(error)
   }
@@ -74,7 +72,6 @@ createTableLog();
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
   if (!token) return res.sendStatus(401);
-  
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) return res.sendStatus(403);
     req.user = user;
@@ -82,23 +79,15 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Exemple de route protégée
-app.get('/api/protected', authenticateToken, (req, res) => {
-  res.json({ message: 'Route protégée, vous êtes authentifié', user: req.user });
-});
-
-
 // Route d'authentification
 app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     const [users] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
     const user = users[0];
-
     if (!user || user.password !== password) { // En production, utiliser bcrypt pour le hash
       return res.status(401).json({ message: 'Identifiants invalides' });
     }
-
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET);
     res.json({ token, user: { username: user.username, role: user.role } });
   } catch (error) {
@@ -139,28 +128,22 @@ function insertMember(memberId){
 
 app.post('/api/members', authenticateToken, async (req, res) => {
   const { firstName, lastName, cin, phone, email, birthDate, facebookName, profession, height } = req.body;
-
   try {
     // Vérifier si un membre avec le même cin ou email existe déjà
     const [existingMember] = await pool.query(
       'SELECT * FROM members WHERE cin = ? OR email = ?',
       [cin, email]
     );
-
     if (existingMember.length > 0) {
       return res.status(400).json({ message: 'Le CIN ou l\'email existe déjà' });
     }
-
     // Insertion du nouveau membre
     const [result] = await pool.query(
       'INSERT IGNORE INTO members (firstName, lastName, cin, phone, email, birthDate, facebookName, profession, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [firstName, lastName, cin, phone, email, birthDate, facebookName, profession, height]
     );
-
     insertMember(result.insertId);
-
     res.status(201).json({ id: result.insertId, ...req.body });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
@@ -170,24 +153,20 @@ app.post('/api/members', authenticateToken, async (req, res) => {
 app.put('/api/members/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { firstName, lastName, cin, phone, email, birthDate, facebookName, profession, height } = req.body;
-
   try {
     // Vérifier si un membre avec le même cin ou email existe déjà, à l'exception du membre actuel
     const [existingMember] = await pool.query(
       'SELECT * FROM members WHERE (cin = ? OR email = ?) AND id != ?',
       [cin, email, id]
     );
-
     if (existingMember.length > 0) {
       return res.status(400).json({ message: 'Le CIN ou l\'email existe déjà' });
     }
-
     // Mise à jour du membre
     const [results, fields] = await pool.query(
       'UPDATE members SET firstName=?, lastName=?, cin=?, phone=?, email=?, birthDate=?, facebookName=?, profession=?, height=? WHERE id=?',
       [firstName, lastName, cin, phone, email, birthDate, facebookName, profession, height, id]
     );
-
     // Si aucune ligne n'a été affectée, cela signifie qu'aucun membre n'a été trouvé avec l'id spécifié
     if (results.affectedRows === 0) {
       return res.status(404).json({ message: 'Membre non trouvé' });
@@ -214,9 +193,7 @@ app.get('/api/members/count', authenticateToken, async (req, res) => {
   }
 })
 
-
 app.delete('/api/members/:id', authenticateToken, async (req, res) => {
-
   const { id } = req.params;
   try {
     await pool.query('DELETE FROM members WHERE id = ?', [id]);
@@ -237,13 +214,10 @@ app.get('/api/contributions', authenticateToken, async (req, res) => {
       JOIN members m ON c.memberId = m.id
       where c.year=YEAR(CURRENT_TIMESTAMP)
     `);
-
     const q1 = []
     const q2 = []
     const q3 = []
     const q4 = []
-
-    
     let compteur = -1;
     let lastMemberId = 0;
     rows.map((row)=>{
@@ -271,7 +245,6 @@ app.get('/api/contributions', authenticateToken, async (req, res) => {
       }
       lastMemberId = row.memberId;
     })
-
     //q2
     compteur = -1
     // debugger
@@ -281,7 +254,6 @@ app.get('/api/contributions', authenticateToken, async (req, res) => {
         if (row.memberId !== lastMemberId){
           compteur+=1;
         }
-
         if(( row.month === 4 )){
           q2.push(
             {
@@ -305,7 +277,6 @@ app.get('/api/contributions', authenticateToken, async (req, res) => {
       }
 
     })
-
     //q3
     compteur=-1
     lastMemberId=0
@@ -335,9 +306,7 @@ app.get('/api/contributions', authenticateToken, async (req, res) => {
         }
         lastMemberId = row.memberId;
       }
-
     })
-
     //q4
     compteur=-1
     lastMemberId=0
@@ -367,17 +336,13 @@ app.get('/api/contributions', authenticateToken, async (req, res) => {
         }
         lastMemberId = row.memberId;
       }
-
     })
-    // console.log(q1)
     let data = {
       q1: q1,
       q2: q2,
       q3: q3,
       q4: q4
     };
-    // console.log(data.q1)
-
     res.json(data);
   } catch (error) {
     console.error(error);
@@ -415,7 +380,6 @@ app.post('/api/contributions', authenticateToken, async (req, res) => {
 
 app.put('/api/contributions', authenticateToken, async (req, res) => {
   const { paiement, memberId, monthNumber } = req.body;
-  // const paidAt = new Date();
   try {
     await pool.query(
       'UPDATE contributions SET paidAt = NOW() , paiement = ? WHERE memberId = ? AND month = ?',
@@ -439,36 +403,8 @@ app.delete('/api/contributions/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Route pour obtenir les statistiques
-app.get('/api/stats', authenticateToken, async (req, res) => {
-  try {
-    const [memberCount] = await pool.query('SELECT COUNT(*) as count FROM members');
-    const [contributionsTotal] = await pool.query('SELECT SUM(amount) as total FROM contributions');
-    const [monthlyStats] = await pool.query(`
-      SELECT 
-        CONCAT(year, '-', month) as period,
-        COUNT(*) as count,
-        SUM(amount) as total
-      FROM contributions
-      GROUP BY year, month
-      ORDER BY year DESC, month DESC
-      LIMIT 12
-    `);
-
-    res.json({
-      memberCount: memberCount[0].count,
-      contributionsTotal: contributionsTotal[0].total || 0,
-      monthlyStats
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Erreur serveur' });
-  }
-});
-
 // Routes des utilisateurs (admin seulement)
 app.get('/api/users', authenticateToken, async (req, res) => {
-  // if (req.user.role !== 'admin') return res.sendStatus(403);
   try {
     const [rows] = await pool.query('SELECT  username, password, role FROM users');
     res.json(rows);
@@ -534,7 +470,6 @@ app.get('/api/loginlogs', authenticateToken, async(req, res) => {
 // Inserer un log d'un user
 app.post('/api/loginlogs', authenticateToken, async(req, res) => {
   const { username, timestamp, success } = req.body;
-
   const sql = `
     INSERT INTO userlog (username, timestamp, success) VALUES (?, ?, ?)
   `
