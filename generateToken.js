@@ -10,7 +10,7 @@ const payload = {
 };
 
 // Générer un token avec une expiration de 1h
-const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '200h' });
+const token = jwt.sign(payload, process.env.JWT_SECRET);
 
 console.log('Token:', token);
 

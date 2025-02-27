@@ -1,7 +1,7 @@
-fetch('http://localhost:3000/api/members', {
+fetch('http://localhost:3000/api/contributions', {
     method: 'GET',
     headers: {
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoidXNlclRlc3QiLCJyb2xlIjoidXNlciIsImlhdCI6MTc0MDQ3NjQ2MCwiZXhwIjoxNzQwNDgwMDYwfQ.xiFwHzHZTtO5DBNttg8HIpN2jWvTykvbNW6Fsl8dYFo'  // Remplacez par votre token généré
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoidXNlclRlc3QiLCJyb2xlIjoidXNlciIsImlhdCI6MTc0MDUwMjU0OSwiZXhwIjoxNzQxMjIyNTQ5fQ.wOOGp2frri2NDVxuHzXYFxh1bkN2CYBTUrOj4QUrV4k'  // Remplacez par votre token généré
     }
   })
   .then(response => response.json())

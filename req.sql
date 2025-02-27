@@ -29,7 +29,7 @@ CREATE TABLE contributions (
     FOREIGN KEY (memberId) REFERENCES members(id) ON DELETE CASCADE
 );
 
-
+ALTER TABLE contributions MODIFY paidAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 -- Insertion des utilisateurs
 INSERT INTO users (username, password, role) VALUES
@@ -45,8 +45,37 @@ INSERT INTO members (firstName, lastName, cin, phone, email, birthDate, facebook
 
 -- Insertion des cotisations
 INSERT INTO contributions (memberId, month, year, paidAt, paiement) VALUES
-(1, 1, 2024, '2024-01-10 14:30:00', false),
-(1, 2, 2024, '2024-02-15 11:20:00', true),
-(2, 1, 2024, '2024-01-05 09:45:00', false),
-(2, 3, 2024, '2024-03-18 16:10:00', false),
-(3, 2, 2024, '2024-02-25 13:00:00', false);
+(86, 1, 2025, '2025-01-10 14:30:00', false),
+(86, 2, 2025, '2025-02-15 11:20:00', false),
+(86, 3, 2025, '2025-01-05 09:45:00', false),
+(86, 4, 2025, '2025-03-18 16:10:00', false),
+(86, 5, 2025, '2025-02-25 13:00:00', false),
+(86, 6, 2025, '2025-02-25 13:00:00', false),
+(86, 7, 2025, '2025-02-25 13:00:00', false),
+(86, 8, 2025, '2025-02-25 13:00:00', false),
+(86, 9, 2025, '2025-02-25 13:00:00', false),
+(86, 10, 2025, '2025-02-25 13:00:00', false),
+(86, 11, 2025, '2025-02-25 13:00:00', false),
+(86, 12, 2025, '2025-02-25 13:00:00', false);
+
+
+INSERT INTO contributions (memberId, month, year, paidAt, paiement) VALUES
+(?, 1, YEAR(NOW()), NOW(), false),
+(?, 2, YEAR(NOW()),NOW(), false),
+(?, 3, YEAR(NOW()), NOW(), false),
+(?, 4, YEAR(NOW()), NOW(), false),
+(?, 5, YEAR(NOW()), NOW(), false),
+(?, 6, YEAR(NOW()), NOW(), false),
+(?, 7, YEAR(NOW()), NOW(), false),
+(?, 8, YEAR(NOW()), NOW(), false),
+(?, 9, YEAR(NOW()), NOW(), false),
+(?, 10, YEAR(NOW()), NOW(), false),
+(?, 11, YEAR(NOW()), NOW(), false),
+(?, 12, YEAR(NOW()), NOW(), false);
+
+
+UPDATE contributions SET paiement = true;
+
+UPDATE contributions SET paiement = ? WHERE memberId = ? AND month = ?;
+
+UPDATE contributions SET paiement = true WHERE memberId = 86 AND id = 22;

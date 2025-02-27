@@ -7,10 +7,11 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+const app = express();
+
 // Obtenir le répertoire courant du fichier
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const app = express();
 
 // Exemple d'utilisation de __dirname
 app.use(express.static(path.join(__dirname, 'dist')));
@@ -83,6 +84,25 @@ app.get('/api/members', authenticateToken, async (req, res) => {
   }
 });
 
+function insertMember(memberId){
+  const sql = `
+    INSERT INTO contributions (memberId, month, year, paidAt, paiement) VALUES
+      (?, 1, YEAR(NOW()), NOW(), false),
+      (?, 2, YEAR(NOW()),NOW(), false),
+      (?, 3, YEAR(NOW()), NOW(), false),
+      (?, 4, YEAR(NOW()), NOW(), false),
+      (?, 5, YEAR(NOW()), NOW(), false),
+      (?, 6, YEAR(NOW()), NOW(), false),
+      (?, 7, YEAR(NOW()), NOW(), false),
+      (?, 8, YEAR(NOW()), NOW(), false),
+      (?, 9, YEAR(NOW()), NOW(), false),
+      (?, 10, YEAR(NOW()), NOW(), false),
+      (?, 11, YEAR(NOW()), NOW(), false),
+      (?, 12, YEAR(NOW()), NOW(), false)
+  `
+   pool.query(sql, [memberId,memberId,memberId,memberId,memberId,memberId,memberId,memberId,memberId,memberId,memberId,memberId,])
+}
+
 app.post('/api/members', authenticateToken, async (req, res) => {
   const { firstName, lastName, cin, phone, email, birthDate, facebookName, profession, height } = req.body;
 
@@ -101,7 +121,9 @@ app.post('/api/members', authenticateToken, async (req, res) => {
     const [result] = await pool.query(
       'INSERT IGNORE INTO members (firstName, lastName, cin, phone, email, birthDate, facebookName, profession, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [firstName, lastName, cin, phone, email, birthDate, facebookName, profession, height]
-    );    
+    );
+
+    insertMember(result.insertId);
 
     res.status(201).json({ id: result.insertId, ...req.body });
 
@@ -150,7 +172,7 @@ app.get('/api/members/count', authenticateToken, async (req, res) => {
     const [rows] = await pool.query(`
       SELECT COUNT(id) as counts FROM members
     `);
-    const count = rows[0]
+    const count = rows[0];
     res.json(count);
   } catch (error) {
     console.error(error);
@@ -160,7 +182,6 @@ app.get('/api/members/count', authenticateToken, async (req, res) => {
 
 
 app.delete('/api/members/:id', authenticateToken, async (req, res) => {
-  console.log(22);
 
   const { id } = req.params;
   try {
@@ -176,11 +197,154 @@ app.delete('/api/members/:id', authenticateToken, async (req, res) => {
 app.get('/api/contributions', authenticateToken, async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT c.*, m.firstName, m.lastName 
+      SELECT c.memberId, c.month, c.paiement, m.firstName, m.lastName 
       FROM contributions c
+
       JOIN members m ON c.memberId = m.id
+      where c.year=YEAR(CURRENT_TIMESTAMP)
     `);
-    res.json(rows);
+
+    const q1 = []
+    const q2 = []
+    const q3 = []
+    const q4 = []
+
+    
+    let compteur = -1;
+    let lastMemberId = 0;
+    rows.map((row)=>{
+      if (row.memberId !== lastMemberId && row.month <= 3){
+        compteur+=1;
+      }
+      if(( row.month === 1 )){
+        q1.push(
+          {
+            memberId: row.memberId,
+            memberName: row.firstName+" "+row.lastName,
+            payments: {
+              janvier: row.paiement===1,
+              fevrier: false,
+              mars: false
+            }
+          }
+        )
+      }
+      if(( row.month === 2 )){
+        q1[compteur].payments.fevrier = row.paiement===1;
+      }
+      if(( row.month === 3 )){
+        q1[compteur].payments.mars = row.paiement===1;
+      }
+      lastMemberId = row.memberId;
+    })
+
+    //q2
+    compteur = -1
+    // debugger
+    lastMemberId=0
+    rows.map((row)=>{
+      if (row.month > 3 && row.month <= 6){
+        if (row.memberId !== lastMemberId){
+          compteur+=1;
+        }
+
+        if(( row.month === 4 )){
+          q2.push(
+            {
+              memberId: row.memberId,
+              memberName: row.firstName+" "+row.lastName,
+              payments: {
+                avril: row.paiement===1,
+                mai: false,
+                juin: false
+              }
+            }
+          )
+        }
+        if(( row.month === 5 )){
+          q2[compteur].payments.mai = row.paiement===1;
+        }
+        if(( row.month === 6 )){
+          q2[compteur].payments.juin = row.paiement===1;
+        }
+        lastMemberId = row.memberId;
+      }
+
+    })
+
+    //q3
+    compteur=-1
+    lastMemberId=0
+    rows.map((row)=>{
+      if (row.month > 6 && row.month <= 9){
+        if (row.memberId !== lastMemberId){
+          compteur+=1;
+        }
+        if(( row.month === 7 )){
+          q3.push(
+            {
+              memberId: row.memberId,
+              memberName: row.firstName+" "+row.lastName,
+              payments: {
+                juillet: row.paiement===1,
+                aout: false,
+                septembre: false
+              }
+            }
+          )
+        }
+        if(( row.month === 8 )){
+          q3[compteur].payments.aout = row.paiement===1;
+        }
+        if(( row.month === 9 )){
+          q3[compteur].payments.septembre = row.paiement===1;
+        }
+        lastMemberId = row.memberId;
+      }
+
+    })
+
+    //q4
+    compteur=-1
+    lastMemberId=0
+    rows.map((row)=>{
+      if (row.month > 9){
+        if (row.memberId !== lastMemberId){
+          compteur+=1;
+        }
+        if(( row.month === 10 )){
+          q4.push(
+            {
+              memberId: row.memberId,
+              memberName: row.firstName+" "+row.lastName,
+              payments: {
+                octobre: row.paiement===1,
+                novembre: false,
+                decembre: false
+              }
+            }
+          )
+        }
+        if(( row.month === 11 )){
+          q4[compteur].payments.novembre = row.paiement===1;
+        }
+        if(( row.month === 12 )){
+          q4[compteur].payments.decembre = row.paiement===1;
+        }
+        lastMemberId = row.memberId;
+      }
+
+    })
+    // console.log(q1)
+    let data = {
+      q1: q1,
+      q2: q2,
+      q3: q3,
+      q4: q4
+    };
+    // console.log(data.q1)
+
+    res.json(data);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
@@ -215,15 +379,15 @@ app.post('/api/contributions', authenticateToken, async (req, res) => {
   }
 });
 
-app.put('/api/contributions/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
-  const { amount, paidAt } = req.body;
+app.put('/api/contributions', authenticateToken, async (req, res) => {
+  const { paiement, memberId, monthNumber } = req.body;
+  // const paidAt = new Date();
   try {
     await pool.query(
-      'UPDATE contributions SET amount = ?, paidAt = ? WHERE id = ?',
-      [amount, paidAt, id]
+      'UPDATE contributions SET paidAt = NOW() , paiement = ? WHERE memberId = ? AND month = ?',
+      [paiement, memberId, monthNumber]
     );
-    res.json({ id, ...req.body });
+    res.json({});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
