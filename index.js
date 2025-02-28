@@ -10,11 +10,11 @@ import { fileURLToPath } from 'url';
 const app = express();
 
 // Obtenir le répertoire courant du fichier
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Exemple d'utilisation de __dirname
-// app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Charge les variables d'environnement
 dotenv.config();
@@ -450,9 +450,9 @@ app.post('/api/loginlogs', authenticateToken, async(req, res) => {
 })
 
 // Route pour servir l'application React
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-// });
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
