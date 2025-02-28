@@ -10,11 +10,11 @@ import { fileURLToPath } from 'url';
 const app = express();
 
 // Obtenir le répertoire courant du fichier
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 // Exemple d'utilisation de __dirname
-app.use(express.static(path.join(__dirname, 'dist')));
+// app.use(express.static(path.join(__dirname, 'dist')));
 
 // Charge les variables d'environnement
 dotenv.config();
@@ -407,13 +407,11 @@ app.delete('/api/users/:username', authenticateToken, async (req, res) => {
   }
 });
 
-app.put('/api/users/:id/role', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin') return res.sendStatus(403);
-  const { id } = req.params;
-  const { role } = req.body;
+app.put('/api/users', authenticateToken, async (req, res) => {
+  const { username, role } = req.body;
   try {
-    await pool.query('UPDATE users SET role = ? WHERE id = ?', [role, id]);
-    res.json({ id, role });
+    await pool.query('UPDATE users SET role = ? WHERE username = ?', [role, username]);
+    res.json({ username, role });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
@@ -452,9 +450,9 @@ app.post('/api/loginlogs', authenticateToken, async(req, res) => {
 })
 
 // Route pour servir l'application React
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+// });
 
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
