@@ -22,7 +22,7 @@ CREATE TABLE members (
     birthDate DATE NOT NULL,
     facebookName VARCHAR(100),
     profession VARCHAR(100),
-    height DECIMAL(5,2) -- Stocke la taille en mètres (ex: 1.75)
+    height DECIMAL(5,2)
 );
 
 CREATE TABLE contributions (
@@ -30,6 +30,7 @@ CREATE TABLE contributions (
     memberId INT NOT NULL,
     month INT NOT NULL CHECK (month BETWEEN 1 AND 12),
     year INT NOT NULL,
+    amount BIGINT NOT NULL DEFAULT 0,
     paidAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     paiement BOOLEAN default FALSE,
 
@@ -52,18 +53,18 @@ INSERT INTO members (firstName, lastName, cin, phone, email, birthDate, facebook
 
 -- Insertion des cotisations
 INSERT INTO contributions (memberId, month, year, paidAt, paiement) VALUES
-(86, 1, 2025, '2025-01-10 14:30:00', false),
-(86, 2, 2025, '2025-02-15 11:20:00', false),
-(86, 3, 2025, '2025-01-05 09:45:00', false),
-(86, 4, 2025, '2025-03-18 16:10:00', false),
-(86, 5, 2025, '2025-02-25 13:00:00', false),
-(86, 6, 2025, '2025-02-25 13:00:00', false),
-(86, 7, 2025, '2025-02-25 13:00:00', false),
-(86, 8, 2025, '2025-02-25 13:00:00', false),
-(86, 9, 2025, '2025-02-25 13:00:00', false),
-(86, 10, 2025, '2025-02-25 13:00:00', false),
-(86, 11, 2025, '2025-02-25 13:00:00', false),
-(86, 12, 2025, '2025-02-25 13:00:00', false);
+(1, 1, 2025, '2025-01-10 14:30:00', false),
+(2, 2, 2025, '2025-02-15 11:20:00', false),
+(3, 3, 2025, '2025-01-05 09:45:00', false),
+(1, 4, 2025, '2025-03-18 16:10:00', false),
+(2, 5, 2025, '2025-02-25 13:00:00', false),
+(3, 6, 2025, '2025-02-25 13:00:00', false),
+(1, 7, 2025, '2025-02-25 13:00:00', false),
+(2, 8, 2025, '2025-02-25 13:00:00', false),
+(3, 9, 2025, '2025-02-25 13:00:00', false),
+(1, 10, 2025, '2025-02-25 13:00:00', false),
+(2, 11, 2025, '2025-02-25 13:00:00', false),
+(3, 12, 2025, '2025-02-25 13:00:00', false);
 
 
 INSERT INTO contributions (memberId, month, year, paidAt, paiement) VALUES

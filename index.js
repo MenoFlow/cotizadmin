@@ -182,6 +182,7 @@ app.get('/api/contributions', authenticateToken, async (req, res) => {
       JOIN members m ON c.memberId = m.id
       where c.year=YEAR(CURRENT_TIMESTAMP)
     `);
+    // console.log(rows)
     const q1 = []
     const q2 = []
     const q3 = []
@@ -205,6 +206,8 @@ app.get('/api/contributions', authenticateToken, async (req, res) => {
           }
         )
       }
+      console.log(compteur)
+      console.log(q1[compteur])
       if(( row.month === 2 )){
         q1[compteur].payments.fevrier = row.paiement===1;
       }
